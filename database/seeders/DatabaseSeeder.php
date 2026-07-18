@@ -13,6 +13,13 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        User::create([
+            'name' => 'System Admin',
+            'email' => 'admin@system.com',
+            'password' => \Illuminate\Support\Facades\Hash::make('password'),
+            'role' => 'admin'
+        ]);
+
         $employee = User::create([
             'name' => 'Rahim Employee',
             'email' => 'employee@system.com',
