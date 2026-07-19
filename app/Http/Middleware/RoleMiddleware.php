@@ -10,8 +10,7 @@ class RoleMiddleware
 {
     public function handle(Request $request, Closure $next, string $role): Response
     {
-        // ইউজার লগইন করা না থাকলে বা সঠিক রোল না থাকলে অ্যাক্সেস ব্লক
-        if (!$request->user() || $request->user()->role !== $role) {
+        if (! $request->user() || $request->user()->role !== $role) {
             abort(403, 'Unauthorized action.');
         }
 

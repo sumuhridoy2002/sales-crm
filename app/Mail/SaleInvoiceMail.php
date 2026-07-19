@@ -17,16 +17,24 @@ class SaleInvoiceMail extends Mailable
 
     public function envelope(): Envelope
     {
-        return new Envelope(subject: 'Your Order Invoice #' . $this->sale->id);
+        return new Envelope(subject: 'Your Order Invoice #'.$this->sale->id);
     }
 
     public function content(): Content
     {
+        $itemsHtml = $this->sale->items->map(function ($item) {
+            $lineTotal = number_format($item->unit_price * $item->quantity, 2);
+
+            return "<li>{$item->product->name} x {$item->quantity} = BDT {$lineTotal}</li>";
+        })->implode('');
+
         return new Content(
             htmlString: "
                 <h2>Thank you for your purchase!</h2>
                 <p>Order ID: #{$this->sale->id}</p>
-                <p>Total Amount: BDT {$this->sale->total_amount}</p>
+                <p>Branch: {$this->sale->branch->name}</p>
+                <ul>{$itemsHtml}</ul>
+                <p><strong>Total Amount: BDT ".number_format($this->sale->total_amount, 2)."</strong></p>
                 <p>We appreciate your business.</p>
             "
         );

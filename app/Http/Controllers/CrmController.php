@@ -2,35 +2,38 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\AssignCustomerRequest;
+use App\Jobs\SendReEngagementEmail;
 use App\Models\Customer;
 use App\Models\User;
-use App\Jobs\SendReEngagementEmail;
-use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
 class CrmController extends Controller
 {
-    // ড্যাশবোর্ডে ডেটা লোড করার মেথড
-    public function dashboard()
+    public function dashboard(): View
     {
-        $inactiveCustomers = Customer::inactive(90)->with('assignedEmployee')->get();
-        $employees = User::where('role', 'employee')->get();
+        $inactiveDays = config('crm.inactive_days', 90);
+        $inactiveCustomers = Customer::inactive($inactiveDays)
+            ->with('assignedEmployee')
+            ->orderBy('last_purchase_at')
+            ->get();
+        $employees = User::where('role', 'employee')->orderBy('name')->get();
 
-        return view('dashboard', compact('inactiveCustomers', 'employees'));
+        return view('dashboard', compact('inactiveCustomers', 'employees', 'inactiveDays'));
     }
 
-    public function assignCustomer(Request $request, Customer $customer)
+    public function assignCustomer(AssignCustomerRequest $request, Customer $customer): RedirectResponse
     {
-        $request->validate(['employee_id' => 'required|exists:users,id']);
-        
         $customer->update(['assigned_employee_id' => $request->employee_id]);
 
-        return redirect()->back()->with('status', 'Employee assigned successfully!');
+        return redirect()->back()->with('status', 'Employee assigned successfully.');
     }
 
-    public function reEngage(Customer $customer)
+    public function reEngage(Customer $customer): RedirectResponse
     {
         dispatch(new SendReEngagementEmail($customer));
 
-        return redirect()->back()->with('status', 'Re-engagement email queued!');
+        return redirect()->back()->with('status', 'Re-engagement email queued.');
     }
 }

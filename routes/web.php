@@ -1,27 +1,34 @@
 <?php
 
 use App\Http\Controllers\CrmController;
+use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SaleController;
 use Illuminate\Support\Facades\Route;
 
-// ল্যান্ডিং পেজ সরাসরি লগইনে নিয়ে যাবে
 Route::get('/', function () {
     return redirect('/login');
 });
 
-// অথেনটিকেটেড রাউটস
 Route::middleware(['auth', 'verified'])->group(function () {
-    
-    // ড্যাশবোর্ড রাউট (যেখানে কাস্টমার ও KPI দেখা যাবে)
     Route::get('/dashboard', [CrmController::class, 'dashboard'])->name('dashboard');
 
-    // শুধুমাত্র অ্যাডমিনের জন্য প্রটেক্টেড রাউটস (Role Middleware)
+    Route::get('/products', [ProductController::class, 'index'])->name('products.index');
+    Route::get('/sales', [SaleController::class, 'index'])->name('sales.index');
+    Route::get('/sales/create', [SaleController::class, 'create'])->name('sales.create');
+    Route::post('/sales', [SaleController::class, 'store'])->name('sales.store');
+    Route::get('/customers', [CustomerController::class, 'index'])->name('customers.index');
+    Route::get('/customers/{customer}', [CustomerController::class, 'show'])->name('customers.show');
+
     Route::middleware(['role:admin'])->group(function () {
-        Route::post('/crm/customers/{customer}/assign', [CrmController::class, 'assignCustomer']);
-        Route::post('/crm/customers/{customer}/re-engage', [CrmController::class, 'reEngage']);
+        Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
+        Route::post('/products', [ProductController::class, 'store'])->name('products.store');
+        Route::post('/products/stock', [ProductController::class, 'updateStock'])->name('products.stock.update');
+        Route::post('/crm/customers/{customer}/assign', [CrmController::class, 'assignCustomer'])->name('crm.customers.assign');
+        Route::post('/crm/customers/{customer}/re-engage', [CrmController::class, 'reEngage'])->name('crm.customers.re-engage');
     });
 
-    // Breeze default profile routes
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

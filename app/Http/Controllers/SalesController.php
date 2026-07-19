@@ -18,7 +18,6 @@ class SalesController extends Controller
             'items' => 'required|array',
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|integer|min:1',
-            'items.*.price' => 'required|numeric',
         ]);
 
         try {
@@ -27,7 +26,7 @@ class SalesController extends Controller
                 $request->customer_id,
                 $request->items
             );
-            return response()->json(['message' => 'বিক্রয় সফল হয়েছে!', 'sale_id' => $sale->id], 201);
+            return response()->json(['message' => 'Sale completed successfully.', 'sale_id' => $sale->id], 201);
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 400);
         }
